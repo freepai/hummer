@@ -3,14 +3,15 @@ package main
 import (
 	"github.com/freepai/hummer/config"
 	"github.com/freepai/hummer/core"
-	"github.com/freepai/hummer/core/server"
+	"github.com/freepai/hummer/server"
 )
 
 func main() {
-	cfg := config.Load("HummerFile")
-	hummer := core.NewHummer()
-	hummer.InitPlugins(cfg.PluginsCfg)
+	cfg := config.Load("hummer.yaml")
 
-	server := server.NewServer(cfg.ServerCfg, hummer)
+	hummer := core.NewHummer()
+	hummer.InitPlugins(cfg.Plugins)
+
+	server := server.NewServer(cfg.Server, hummer)
 	server.Start()
 }

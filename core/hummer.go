@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"github.com/freepai/hummer/config"
 	"github.com/freepai/hummer/core/domain"
 	"github.com/freepai/hummer/core/plugin"
@@ -8,17 +9,17 @@ import (
 )
 
 var (
-	plugins map[string]plugin.Plugin
+	pluginRegistry map[string]*plugin.Info
 )
 
 type Hummer struct {
-	idGens map[string]api.IdGen
-	idEncodes map[string]api.IDEncode
-	idStores map[string]api.IDStore
+	idGen api.IdGen
+	idEncode api.IDEncode
+	idStore api.IDStore
 }
 
-func Register(plug plugin.Plugin) error {
-	plugins[plug.Name()] = plug
+func RegisterPlugin(plug *plugin.Info) error {
+	pluginRegistry[plug.Name] = plug
 	return nil
 }
 
@@ -26,39 +27,67 @@ func NewHummer() *Hummer {
 	return &Hummer{}
 }
 
-func (hummer *Hummer) RegisterIdGen(name string, idGen api.IdGen) error {
-	hummer.idGens[name] = idGen
+func (h *Hummer) RegisterIdGen(idGen api.IdGen) error {
+	h.idGen = idGen
 	return nil
 }
 
-func (hummer *Hummer) RegisterIdEncode(name string, idEncode api.IDEncode) error {
-	hummer.idEncodes[name] = idEncode
+func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) error {
+	h.idEncode = idEncode
 	return nil
 }
 
-func (hummer *Hummer) RegisterIdStore(name string, IdStore api.IDStore) error {
-	hummer.idStores[name] = IdStore
+func (h *Hummer) RegisterIdStore(IdStore api.IDStore) error {
+	h.idStore = IdStore
 	return nil
 }
 
-func (hummer *Hummer) setupPlugins(cfgs []*config.PluginConfig) {
+func (h *Hummer) setupPlugins(cfgs []*config.PluginConfig) error {
 	for i:=0; i<len(cfgs); i++ {
 		pluginCfg := cfgs[i]
-		plugin := plugins[pluginCfg.Name]
-		plugin.Setup(hummer)
+		info := pluginRegistry[pluginCfg.Name]
+
+		if info != nil {
+			plugin := info.New()
+			plugin.Setup(h, pluginCfg.Params)
+		} else {
+			return errors.New("not found plugin with name:" + pluginCfg.Name)
+		}
 	}
+
+	return nil
 }
 
-func (hummer *Hummer) InitPlugins(cfg *config.PluginsConfig) {
-	hummer.setupPlugins(cfg.IDGens)
-	hummer.setupPlugins(cfg.IDEncodes)
-	hummer.setupPlugins(cfg.IDStores)
+func (h *Hummer) InitPlugins(cfg *config.PluginsConfig) {
+	h.setupPlugins(cfg.IDGens)
+	h.setupPlugins(cfg.IDEncodes)
+	h.setupPlugins(cfg.IDStores)
 }
 
-func (hummer *Hummer) Post(ns string, longUrl string) (*domain.ShortUrl, error) {
-	return nil, nil
+func (h *Hummer) Post(ns string, longUrl string) (*domain.ShortUrl, error) {
+	id, err := h.idGen.NextUniqueId(ns)
+	if err!=nil {
+		return nil, err
+	}
+
+	code, err := h.idEncode.EncodeId(ns, id)
+	if err!=nil {
+		return nil, err
+	}
+
+	su, err := h.idStore.Save(ns, code, longUrl)
+	if err!=nil {
+		return nil, err
+	}
+
+	return su, nil
 }
 
-func (hummer *Hummer) Get(ns string, code string) (*domain.ShortUrl, error) {
-	return nil, nil
+func (h *Hummer) Get(ns string, code string) (*domain.ShortUrl, error) {
+	su, err := h.idStore.Get(ns, code)
+	if err!=nil {
+		return nil, err
+	}
+
+	return su, nil
 }

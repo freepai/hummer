@@ -18,7 +18,7 @@ type PluginsConfig struct {
 }
 
 type HummerConfig struct {
-	ServerCfg *ServerConfig
-	PluginsCfg *PluginsConfig
+	Server *ServerConfig
+	Plugins *PluginsConfig
 }
 

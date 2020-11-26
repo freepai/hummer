@@ -1,7 +1,12 @@
 package plugin
 
+type Info struct {
+	Name string
+	New func() Plugin
+}
+
 type Plugin interface {
-	Name() string
-	Setup(ctx Context) error
+	Info() *Info
+	Setup(ctx Context, params map[string]string) error
 	TearDown(ctx Context) error
 }
