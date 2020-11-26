@@ -42,6 +42,14 @@ func (h *Hummer) RegisterIdStore(IdStore api.IDStore) error {
 	return nil
 }
 
+func (h *Hummer) RegisterHook(hooks api.Hook) error {
+	return nil
+}
+
+func (h *Hummer) RegisterEndpoint(endpoint api.Endpoint) error {
+	return nil
+}
+
 func (h *Hummer) setupPlugins(cfgs []*config.PluginConfig) error {
 	for i:=0; i<len(cfgs); i++ {
 		pluginCfg := cfgs[i]

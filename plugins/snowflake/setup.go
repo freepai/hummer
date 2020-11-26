@@ -17,9 +17,9 @@ func (p *SnowflakePlugin) Info() *plugin.Info {
 	return pluginInfo
 }
 
-func (p *SnowflakePlugin) Setup(ctx plugin.Context) error {
+func (p *SnowflakePlugin) Setup(ctx plugin.Context, parmas map[string]string) error {
 	idGen := &Snowflake{}
-	ctx.RegisterIdGen("snowflake", idGen)
+	ctx.RegisterIdGen(idGen)
 	return nil
 }
 

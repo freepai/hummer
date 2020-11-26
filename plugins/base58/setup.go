@@ -19,7 +19,7 @@ func (p *Base58Plugin) Info() *plugin.Info {
 
 func (p *Base58Plugin) Setup(ctx plugin.Context, params map[string]string) error {
 	idGen := &Base58{}
-	ctx.RegisterIdEncode("base58", idGen)
+	ctx.RegisterIdEncode(idGen)
 	return nil
 }
 
