@@ -1,7 +1,6 @@
 package snowflake
 
 import (
-	"github.com/freepai/hummer/core"
 	"github.com/freepai/hummer/core/plugin"
 )
 
@@ -10,7 +9,6 @@ var (
 )
 
 type Base58Plugin struct {
-
 }
 
 func (p *Base58Plugin) Info() *plugin.Info {
@@ -33,5 +31,5 @@ func init() {
 		return &Base58Plugin{}
 	}
 
-	core.RegisterPlugin(pluginInfo)
+	plugin.Register(pluginInfo)
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	cfg := config.Load("hummer.yaml")
+	cfg,_ := config.LoadFromFile("hummer.yaml")
 
 	hummer := core.NewHummer()
 	hummer.InitPlugins(cfg.Plugins)

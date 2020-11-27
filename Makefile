@@ -12,12 +12,16 @@ CGO_ENABLED:=0
 all: hummer
 
 .PHONY: hummer
-hummer: test
+hummer:
 	CGO_ENABLED=$(CGO_ENABLED) $(SYSTEM) go build $(BUILDOPTS) -o $(BINARY)
 
 .PHONY: test
 test:
 	go test ./...
+
+.PHONY: run
+run: hummer
+	./hummer
 
 .PHONY: clean
 clean:

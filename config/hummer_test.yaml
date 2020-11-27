@@ -5,8 +5,8 @@ server:
 plugins:
   idGen:
     name: "snowflake"
+    params:
+      abc: abc
   idEncode:
     name: "base64"
-  idStore:
-    name: "leveldb"
 

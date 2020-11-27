@@ -8,68 +8,66 @@ import (
 	"github.com/freepai/hummer/core/plugin/api"
 )
 
-var (
-	pluginRegistry map[string]*plugin.Info
-)
-
 type Hummer struct {
 	idGen api.IdGen
 	idEncode api.IDEncode
 	idStore api.IDStore
-}
-
-func RegisterPlugin(plug *plugin.Info) error {
-	pluginRegistry[plug.Name] = plug
-	return nil
+	hooks map[*api.Hook]api.Hook
 }
 
 func NewHummer() *Hummer {
 	return &Hummer{}
 }
 
-func (h *Hummer) RegisterIdGen(idGen api.IdGen) error {
+func (h *Hummer) RegisterIdGen(idGen api.IdGen) func() {
 	h.idGen = idGen
-	return nil
-}
 
-func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) error {
-	h.idEncode = idEncode
-	return nil
-}
-
-func (h *Hummer) RegisterIdStore(IdStore api.IDStore) error {
-	h.idStore = IdStore
-	return nil
-}
-
-func (h *Hummer) RegisterHook(hooks api.Hook) error {
-	return nil
-}
-
-func (h *Hummer) RegisterEndpoint(endpoint api.Endpoint) error {
-	return nil
-}
-
-func (h *Hummer) setupPlugins(cfgs []*config.PluginConfig) error {
-	for i:=0; i<len(cfgs); i++ {
-		pluginCfg := cfgs[i]
-		info := pluginRegistry[pluginCfg.Name]
-
-		if info != nil {
-			plugin := info.New()
-			plugin.Setup(h, pluginCfg.Params)
-		} else {
-			return errors.New("not found plugin with name:" + pluginCfg.Name)
-		}
+	return func(){
+		h.idGen = nil
 	}
+}
 
-	return nil
+func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) func() {
+	h.idEncode = idEncode
+
+	return func() {
+		h.idEncode = nil
+	}
+}
+
+func (h *Hummer) RegisterIdStore(IdStore api.IDStore) func() {
+	h.idStore = IdStore
+
+	return func(){
+		h.idStore = nil
+	}
+}
+
+func (h *Hummer) RegisterHook(hook api.Hook) func() {
+	h.hooks[&hook] = hook
+
+	return func() {
+		delete(h.hooks, &hook)
+	}
 }
 
 func (h *Hummer) InitPlugins(cfg *config.PluginsConfig) {
-	h.setupPlugins(cfg.IDGens)
-	h.setupPlugins(cfg.IDEncodes)
-	h.setupPlugins(cfg.IDStores)
+	h.ApplyPlugin(cfg.IDGen)
+	h.ApplyPlugin(cfg.IDEncode)
+	h.ApplyPlugin(cfg.IDStore)
+}
+
+func (h *Hummer) ApplyPlugin(cfg *config.PluginConfig) error {
+	info := plugin.Get(cfg.Name)
+
+	if info != nil {
+		plugin := info.New()
+		plugin.Setup(h, cfg.Params)
+	} else {
+		return errors.New("not found plugin with name:" + cfg.Name)
+	}
+
+	return nil
 }
 
 func (h *Hummer) Post(ns string, longUrl string) (*domain.ShortUrl, error) {

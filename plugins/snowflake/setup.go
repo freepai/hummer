@@ -1,7 +1,6 @@
 package snowflake
 
 import (
-	"github.com/freepai/hummer/core"
 	"github.com/freepai/hummer/core/plugin"
 )
 
@@ -33,5 +32,5 @@ func init() {
 		return &SnowflakePlugin{}
 	}
 
-	core.RegisterPlugin(pluginInfo)
+	plugin.Register(pluginInfo)
 }
