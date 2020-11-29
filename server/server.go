@@ -1,5 +1,11 @@
 package server
 
-type Server interface {
-	Start() error
+type Server struct {
+	Addr string // Address we listen on
+}
+
+func NewServer(addr string) *Server{
+	return &Server{
+		Addr: addr,
+	}
 }

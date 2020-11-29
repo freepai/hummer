@@ -1,17 +1,44 @@
 package main
 
 import (
+	"github.com/coredns/caddy"
 	"github.com/freepai/hummer/config"
-	"github.com/freepai/hummer/core"
-	"github.com/freepai/hummer/server"
+	_ "github.com/freepai/hummer/server"
+	_ "github.com/freepai/hummer/plugin"
+	"log"
 )
 
+// Various CoreDNS constants.
+const (
+	hummerVersion = "0.1.0"
+	hummerName    = "Hummer"
+	serverType    = "hummer"
+)
+
+func init() {
+	caddy.DefaultConfigFile = "Hummerfile"
+	caddy.Quiet = true // don't show init stuff from caddy
+
+	caddy.RegisterCaddyfileLoader("flag", caddy.LoaderFunc(config.Loader))
+	caddy.SetDefaultCaddyfileLoader("default", caddy.LoaderFunc(config.DefaultLoader))
+
+	caddy.AppName = hummerName
+	caddy.AppVersion = hummerVersion
+}
+
 func main() {
-	cfg,_ := config.LoadFromFile("hummer.yaml")
+	// Get Hummerfile input
+	hummerfile, err := caddy.LoadCaddyfile(serverType)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	hummer := core.NewHummer()
-	hummer.InitPlugins(cfg.Plugins)
+	// Start your engines
+	instance, err := caddy.Start(hummerfile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	server := server.NewServer(cfg.Server, hummer)
-	server.Start()
+	// Twiddle your thumbs
+	instance.Wait()
 }

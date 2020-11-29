@@ -1,0 +1,14 @@
+
+http:0.0.0.0:8081 {
+    idGen {
+        snowflake
+    }
+
+    idEncode {
+        base64
+    }
+
+    idStore {
+        leveldb
+    }
+}

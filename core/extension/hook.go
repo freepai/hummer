@@ -1,4 +1,4 @@
-package api
+package extension
 
 type Hook interface {
 	BeforeIDGen() error

@@ -1,4 +1,4 @@
-package api
+package extension
 
 import "github.com/freepai/hummer/core/domain"
 

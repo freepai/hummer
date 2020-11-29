@@ -1,25 +1,22 @@
 package core
 
 import (
-	"errors"
-	"github.com/freepai/hummer/config"
 	"github.com/freepai/hummer/core/domain"
-	"github.com/freepai/hummer/core/plugin"
-	"github.com/freepai/hummer/core/plugin/api"
+	"github.com/freepai/hummer/core/extension"
 )
 
 type Hummer struct {
-	idGen api.IdGen
-	idEncode api.IDEncode
-	idStore api.IDStore
-	hooks map[*api.Hook]api.Hook
+	idGen    extension.IdGen
+	idEncode extension.IDEncode
+	idStore  extension.IDStore
+	hooks    map[*extension.Hook]extension.Hook
 }
 
 func NewHummer() *Hummer {
 	return &Hummer{}
 }
 
-func (h *Hummer) RegisterIdGen(idGen api.IdGen) func() {
+func (h *Hummer) RegisterIdGen(idGen extension.IdGen) func() {
 	h.idGen = idGen
 
 	return func(){
@@ -27,7 +24,7 @@ func (h *Hummer) RegisterIdGen(idGen api.IdGen) func() {
 	}
 }
 
-func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) func() {
+func (h *Hummer) RegisterIdEncode(idEncode extension.IDEncode) func() {
 	h.idEncode = idEncode
 
 	return func() {
@@ -35,7 +32,7 @@ func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) func() {
 	}
 }
 
-func (h *Hummer) RegisterIdStore(IdStore api.IDStore) func() {
+func (h *Hummer) RegisterIdStore(IdStore extension.IDStore) func() {
 	h.idStore = IdStore
 
 	return func(){
@@ -43,31 +40,12 @@ func (h *Hummer) RegisterIdStore(IdStore api.IDStore) func() {
 	}
 }
 
-func (h *Hummer) RegisterHook(hook api.Hook) func() {
+func (h *Hummer) RegisterHook(hook extension.Hook) func() {
 	h.hooks[&hook] = hook
 
 	return func() {
 		delete(h.hooks, &hook)
 	}
-}
-
-func (h *Hummer) InitPlugins(cfg *config.PluginsConfig) {
-	h.ApplyPlugin(cfg.IDGen)
-	h.ApplyPlugin(cfg.IDEncode)
-	h.ApplyPlugin(cfg.IDStore)
-}
-
-func (h *Hummer) ApplyPlugin(cfg *config.PluginConfig) error {
-	info := plugin.Get(cfg.Name)
-
-	if info != nil {
-		plugin := info.New()
-		plugin.Setup(h, cfg.Params)
-	} else {
-		return errors.New("not found plugin with name:" + cfg.Name)
-	}
-
-	return nil
 }
 
 func (h *Hummer) Post(ns string, longUrl string) (*domain.ShortUrl, error) {

@@ -1,44 +1,42 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
+	"github.com/coredns/caddy"
 	"io/ioutil"
-	"log"
 	"os"
 )
 
-func LoadFromString(data string) (*HummerConfig, error) {
-	return LoadFromBytes([]byte(data))
-}
+const (
+	DefaultConfigFile ="./Hummerfile"
+)
 
-func LoadFromBytes(data []byte) (*HummerConfig, error) {
-	cfg := &HummerConfig{}
+// confLoader loads the Caddyfile using the -conf flag.
+func Loader(serverType string) (caddy.Input, error) {
+	conf := DefaultConfigFile
 
-	err := yaml.Unmarshal(data, cfg)
+	contents, err := ioutil.ReadFile(conf)
 	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	return cfg, nil
-}
-
-func LoadFromFile(path string) (*HummerConfig, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
+	return caddy.CaddyfileInput{
+		Contents:       contents,
+		Filepath:       conf,
+		ServerTypeName: serverType,
+	}, nil
+}
 
-	defer func() {
-		if err = file.Close(); err != nil {
-			log.Fatal(err)
+// defaultLoader loads the Corefile from the current working directory.
+func DefaultLoader(serverType string) (caddy.Input, error) {
+	contents, err := ioutil.ReadFile(caddy.DefaultConfigFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
 		}
-	}()
-
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
 		return nil, err
 	}
-
-	return LoadFromBytes(data)
+	return caddy.CaddyfileInput{
+		Contents:       contents,
+		Filepath:       caddy.DefaultConfigFile,
+		ServerTypeName: serverType,
+	}, nil
 }
