@@ -10,8 +10,6 @@ func init() {
 		ServerType: "hummer",
 		Action:     setup,
 	})
-
-	caddy.RegisterParsingCallback("hummer", "idGen", )
 }
 
 func setup(c *caddy.Controller) error {

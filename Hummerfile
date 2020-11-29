@@ -12,3 +12,9 @@ http:0.0.0.0:8081 {
         leveldb
     }
 }
+
+http:0.0.0.0:8082 {
+    uiAdmin {
+        snowflake
+    }
+}
