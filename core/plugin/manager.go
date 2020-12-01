@@ -1,14 +1,19 @@
 package plugin
 
 var (
-	registry map[string]*Info
+	registry map[string]Plugin
 )
 
-func Register(plug *Info) error {
-	registry[plug.Name] = plug
+func init() {
+	registry = make(map[string]Plugin, 0)
+}
+
+func Register(name string, setup Plugin) error {
+	registry[name] = setup
 	return nil
 }
 
-func Get(name string) *Info {
+func Get(name string) Plugin {
 	return registry[name]
 }
+

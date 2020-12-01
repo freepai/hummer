@@ -1,5 +1,5 @@
 package server
 
 type Server interface {
-	Start() error
+	ListenAndServe(addr string) error
 }

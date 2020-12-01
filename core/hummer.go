@@ -1,99 +1,79 @@
 package core
 
 import (
-	"errors"
-	"github.com/freepai/hummer/config"
-	"github.com/freepai/hummer/core/domain"
+	"github.com/freepai/hummer/core/config"
 	"github.com/freepai/hummer/core/plugin"
-	"github.com/freepai/hummer/core/plugin/api"
+	"github.com/freepai/hummer/core/server"
+	"github.com/freepai/hummer/core/shorturl"
+	"log"
 )
 
 type Hummer struct {
-	idGen api.IdGen
-	idEncode api.IDEncode
-	idStore api.IDStore
-	hooks map[*api.Hook]api.Hook
+	config *config.HummerConfig
+	beans  map[string]interface{}
 }
 
-func NewHummer() *Hummer {
-	return &Hummer{}
-}
+func NewHummer(path string) *Hummer {
+	cfg, _ := config.LoadFromFile(path)
+	beans := make(map[string]interface{}, 0)
 
-func (h *Hummer) RegisterIdGen(idGen api.IdGen) func() {
-	h.idGen = idGen
-
-	return func(){
-		h.idGen = nil
+	return &Hummer{
+		config: cfg,
+		beans:  beans,
 	}
 }
 
-func (h *Hummer) RegisterIdEncode(idEncode api.IDEncode) func() {
-	h.idEncode = idEncode
+func (r *Hummer) RegisterBean(name string, bean interface{}) error {
+	r.beans[name] = bean
+	return nil
+}
 
-	return func() {
-		h.idEncode = nil
+func (r *Hummer) GetBean(name string) interface{} {
+	return r.beans[name]
+}
+
+func (h *Hummer) ApplyPlugins() {
+	// shorturl and server plugin
+	h.ApplyPlugin(server.PluginName, nil)
+	h.ApplyPlugin(shorturl.PluginName, nil)
+
+	// server protocol plugin
+	s := h.config.Server
+	h.ApplyPlugin(s.Protocol, nil)
+
+	// shorturl extpoint plugin
+	su := h.config.ShortUrl
+	h.ApplyPluginByConfig(su.IDGen)
+	h.ApplyPluginByConfig(su.IDEncode)
+	h.ApplyPluginByConfig(su.IDStore)
+
+	// others plugins
+	plugins := h.config.Plugins
+	for _, cfg := range plugins {
+		h.ApplyPluginByConfig(cfg)
 	}
 }
 
-func (h *Hummer) RegisterIdStore(IdStore api.IDStore) func() {
-	h.idStore = IdStore
+func (h *Hummer) ApplyPlugin(name string, params map[string]string) error {
+	setup := plugin.Get(name)
 
-	return func(){
-		h.idStore = nil
-	}
-}
-
-func (h *Hummer) RegisterHook(hook api.Hook) func() {
-	h.hooks[&hook] = hook
-
-	return func() {
-		delete(h.hooks, &hook)
-	}
-}
-
-func (h *Hummer) InitPlugins(cfg *config.PluginsConfig) {
-	h.ApplyPlugin(cfg.IDGen)
-	h.ApplyPlugin(cfg.IDEncode)
-	h.ApplyPlugin(cfg.IDStore)
-}
-
-func (h *Hummer) ApplyPlugin(cfg *config.PluginConfig) error {
-	info := plugin.Get(cfg.Name)
-
-	if info != nil {
-		plugin := info.New()
-		plugin.Setup(h, cfg.Params)
+	if setup != nil {
+		ctx := plugin.NewContext(h, params)
+		setup(ctx)
 	} else {
-		return errors.New("not found plugin with name:" + cfg.Name)
+		log.Fatal("not found plugin with name: " + name)
 	}
 
 	return nil
 }
 
-func (h *Hummer) Post(ns string, longUrl string) (*domain.ShortUrl, error) {
-	id, err := h.idGen.NextUniqueId(ns)
-	if err!=nil {
-		return nil, err
-	}
-
-	code, err := h.idEncode.EncodeId(ns, id)
-	if err!=nil {
-		return nil, err
-	}
-
-	su, err := h.idStore.Save(ns, code, longUrl)
-	if err!=nil {
-		return nil, err
-	}
-
-	return su, nil
+func (h *Hummer) ApplyPluginByConfig(cfg *plugin.Config) error {
+	return h.ApplyPlugin(cfg.Name, cfg.Params)
 }
 
-func (h *Hummer) Get(ns string, code string) (*domain.ShortUrl, error) {
-	su, err := h.idStore.Get(ns, code)
-	if err!=nil {
-		return nil, err
-	}
+func (h *Hummer) Start() {
+	h.ApplyPlugins()
 
-	return su, nil
+	mgr := server.GetManagerFromRegistry(h)
+	mgr.ListenAndServe(h.config.Server.Addr)
 }

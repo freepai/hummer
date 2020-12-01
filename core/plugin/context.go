@@ -1,10 +1,30 @@
 package plugin
 
-import "github.com/freepai/hummer/core/plugin/api"
+type Context struct {
+	registry Registry
+	params map[string]string
+}
 
-type Context interface {
-	RegisterIdGen(idGen api.IdGen) func()
-	RegisterIdEncode(idEncode api.IDEncode) func()
-	RegisterIdStore(IdStore api.IDStore) func()
-	RegisterHook(hooks api.Hook) func()
+func NewContext(registry Registry, params map[string]string) *Context {
+	return &Context{
+		registry: registry,
+		params: params,
+	}
+}
+
+func (this *Context) GetRegistry() Registry {
+	return this.registry
+}
+
+func (this *Context) RegisterBean(name string, bean interface{}) error {
+	this.registry.RegisterBean(name, bean)
+	return nil
+}
+
+func (this *Context) GetBean(name string) interface{} {
+	return this.registry.GetBean(name)
+}
+
+func (this *Context) GetParam(key string) string {
+	return this.params[key]
 }

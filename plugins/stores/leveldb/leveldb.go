@@ -1,6 +1,6 @@
 package leveldb
 
-import "github.com/freepai/hummer/core/domain"
+import "github.com/freepai/hummer/core/shorturl/domain"
 
 type LevelDB struct {
 

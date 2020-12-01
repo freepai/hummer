@@ -1,12 +1,17 @@
 server:
-  protocol: http
-  host: 0.0.0.0
-  port: 8081
-plugins:
+  protocol: "http"
+  addr: "0.0.0.0:8081"
+
+shorturl:
   idGen:
     name: "snowflake"
   idEncode:
-    name: "base64"
+    name: "base58"
   idStore:
     name: "leveldb"
+    params:
+      path: "./leveldb.db"
 
+plugins:
+  - name: "metrics"
+  - name: "log"

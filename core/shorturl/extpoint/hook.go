@@ -1,4 +1,4 @@
-package api
+package extpoint
 
 type Hook interface {
 	BeforeIDGen() error
