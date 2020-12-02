@@ -1,4 +1,4 @@
-package shorturl
+package service
 
 import (
 	"github.com/freepai/hummer/core/shorturl/domain"

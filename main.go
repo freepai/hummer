@@ -2,10 +2,7 @@ package main
 
 import (
 	"github.com/freepai/hummer/core"
-)
-
-import (
-	_ "github.com/freepai/hummer/plugins/servers/http"
+	_ "github.com/freepai/hummer/plugins"
 )
 
 func main() {

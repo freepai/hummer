@@ -1,4 +1,4 @@
-package http
+package grpc
 
 import (
 	"github.com/freepai/hummer/core/plugin"
@@ -8,11 +8,12 @@ import (
 func setup(ctx *plugin.Context) error {
 	manager := server.GetManager(ctx)
 
-	svr := NewHTTPServer()
+	svr := NewGRPCServer()
 	manager.SetServer(svr)
+
 	return nil
 }
 
 func init() {
-	plugin.Register("http", setup)
+	plugin.Register("grpc", setup)
 }

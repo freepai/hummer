@@ -26,15 +26,20 @@ func (m *Manager) AddRoute(route *Route) {
 	m.routes = append(m.routes, route)
 }
 
-func (m *Manager) AddRouteFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
+func (m *Manager) HandleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
 	route := NewRoute(path, handler)
-	m.routes = append(m.routes, route)
+	m.AddRoute(route)
+}
+
+func (m *Manager) AllRoutes() []*Route {
+	return m.routes
 }
 
 func (m *Manager) ListenAndServe(addr string) {
 	svr := m.server
 
 	if svr!= nil {
+		svr.Config()
 		svr.ListenAndServe(addr)
 	} else {
 		log.Fatal("not config server protocol plugin")

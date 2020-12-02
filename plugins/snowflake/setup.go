@@ -14,5 +14,5 @@ func setup(ctx *plugin.Context) error {
 }
 
 func init() {
-	plugin.Register( "shorturl.idGen.snowflake", setup)
+	plugin.Register( "snowflake", setup)
 }
