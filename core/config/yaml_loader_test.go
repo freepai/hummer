@@ -12,7 +12,7 @@ server:
     addr: 0.0.0.0:8081
 `
 
-	cfg,err := LoadFromString(data)
+	cfg,err := LoadFromYamlString(data)
 
 	assert.Nil(t, err, "load cfg error should  be nil")
 	assert.NotNil(t, cfg, "load cfg should not be nil")
@@ -30,7 +30,7 @@ shorturl:
             abc: abc
 `
 
-	cfg,err := LoadFromString(data)
+	cfg,err := LoadFromYamlString(data)
 
 	assert.Nil(t, err, "load cfg error should  be nil")
 	assert.NotNil(t, cfg, "load cfg should not be nil")
@@ -42,7 +42,7 @@ shorturl:
 }
 
 func TestLoadFromFile(t *testing.T) {
-	cfg,err := LoadFromFile("./hummer_test.yaml")
+	cfg,err := LoadFromYamlFile("./hummer_test.yaml")
 
 	assert.Nil(t, err, "load cfg error should  be nil")
 	assert.NotNil(t, cfg, "load cfg should not be nil")

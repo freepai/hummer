@@ -20,7 +20,7 @@ func (server *HTTPServer) Config() error {
 	routes := server.manager.AllRoutes()
 
 	for _, route := range routes {
-		http.HandleFunc(route.GetPath(), route.GetHandler())
+		http.HandleFunc(route.Path, route.Handler)
 	}
 
 	return nil

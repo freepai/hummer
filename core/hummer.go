@@ -14,7 +14,7 @@ type Hummer struct {
 }
 
 func NewHummer(path string) *Hummer {
-	cfg, _ := config.LoadFromFile(path)
+	cfg, _ := config.LoadFromYamlFile(path)
 	beans := make(map[string]interface{}, 0)
 
 	return &Hummer{
@@ -34,18 +34,8 @@ func (r *Hummer) GetBean(name string) interface{} {
 
 func (h *Hummer) ApplyPlugins() {
 	// shorturl and server plugin
-	h.ApplyPlugin(server.PluginName, nil)
-	h.ApplyPlugin(shorturl.PluginName, nil)
-
-	// server protocol plugin
-	s := h.config.Server
-	h.ApplyPlugin(s.Protocol, nil)
-
-	// shorturl extpoint plugin
-	su := h.config.ShortUrl
-	h.ApplyPluginByConfig(su.IDGen)
-	h.ApplyPluginByConfig(su.IDEncode)
-	h.ApplyPluginByConfig(su.IDStore)
+	h.ApplyPlugin(server.PluginName, h.config.Server)
+	h.ApplyPlugin(shorturl.PluginName, h.config.ShortUrl)
 
 	// others plugins
 	plugins := h.config.Plugins
@@ -54,7 +44,7 @@ func (h *Hummer) ApplyPlugins() {
 	}
 }
 
-func (h *Hummer) ApplyPlugin(name string, params map[string]string) error {
+func (h *Hummer) ApplyPlugin(name string, params interface{}) error {
 	setup := plugin.Get(name)
 
 	if setup != nil {

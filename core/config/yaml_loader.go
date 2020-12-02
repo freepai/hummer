@@ -7,14 +7,10 @@ import (
 	"os"
 )
 
-func LoadFromString(data string) (*HummerConfig, error) {
-	return LoadFromBytes([]byte(data))
-}
-
-func LoadFromBytes(data []byte) (*HummerConfig, error) {
+func LoadFromYamlString(data string) (*HummerConfig, error) {
 	cfg := &HummerConfig{}
 
-	err := yaml.Unmarshal(data, cfg)
+	err := yaml.Unmarshal([]byte(data), cfg)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -22,7 +18,7 @@ func LoadFromBytes(data []byte) (*HummerConfig, error) {
 	return cfg, nil
 }
 
-func LoadFromFile(path string) (*HummerConfig, error) {
+func LoadFromYamlFile(path string) (*HummerConfig, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -40,5 +36,5 @@ func LoadFromFile(path string) (*HummerConfig, error) {
 		return nil, err
 	}
 
-	return LoadFromBytes(data)
+	return LoadFromYamlString(string(data))
 }
