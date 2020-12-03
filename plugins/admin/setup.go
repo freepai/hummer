@@ -9,7 +9,7 @@ import (
 
 func setup(ctx *plugin.Context) error {
 	mgr := server.GetManager(ctx)
-	mgr.HandleFunc("/admin/controller/v1", func(w http.ResponseWriter, req *http.Request) {
+	mgr.HandleFunc("/admin/v1", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "admin info")
 	})
 

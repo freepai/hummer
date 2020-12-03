@@ -1,6 +1,7 @@
 package shorturl
 
 import (
+	"errors"
 	"github.com/freepai/hummer/core/plugin"
 	"github.com/freepai/hummer/core/server"
 	"github.com/freepai/hummer/core/shorturl/controller"
@@ -8,17 +9,23 @@ import (
 )
 
 func setup(ctx *plugin.Context) error {
-	shorturl := &service.Manager{}
-	ctx.RegisterBean(ManagerName, shorturl)
-
 	// shorturl extpoint plugin
-	su := ctx.GetParams().(*Config)
-	ctx.ApplyPlugin(su.IDGen.Name, su.IDGen.Params)
-	ctx.ApplyPlugin(su.IDEncode.Name, su.IDEncode.Params)
-	ctx.ApplyPlugin(su.IDStore.Name, su.IDStore.Params)
+	cfg, ok := ctx.GetConfig().(*Config)
+	if !ok {
+		return errors.New("not support shorturl config")
+	}
 
+	// register shorturl manager
+	shorturl := &service.Manager{}
+	ctx.Register(ManagerName, shorturl)
+
+	// apply extpoint plugins
+	ctx.ApplyPlugin(cfg.IDGen.Name, cfg.IDGen.Params)
+	ctx.ApplyPlugin(cfg.IDEncode.Name, cfg.IDEncode.Params)
+	ctx.ApplyPlugin(cfg.IDStore.Name, cfg.IDStore.Params)
+
+	// export routes
 	mgr := server.GetManager(ctx)
-
 	c := controller.NewShortUrlController(shorturl)
 	mgr.HandleFunc("/api/1/shorturls", c.PostShortUrl)
 

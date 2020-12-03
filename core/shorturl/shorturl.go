@@ -3,6 +3,7 @@ package shorturl
 import (
 	"github.com/freepai/hummer/core/plugin"
 	"github.com/freepai/hummer/core/shorturl/service"
+	"log"
 )
 
 const (
@@ -17,6 +18,11 @@ type Config struct {
 }
 
 func GetManager(ctx *plugin.Context) *service.Manager {
-	return ctx.GetBean(ManagerName).(*service.Manager)
+	mgr, ok := ctx.GetBean(ManagerName).(*service.Manager)
+	if !ok {
+		log.Fatal("not found bean with name:" + ManagerName)
+	}
+
+	return mgr
 }
 

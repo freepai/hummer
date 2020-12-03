@@ -1,13 +1,21 @@
 package server
 
-import "github.com/freepai/hummer/core/plugin"
+import (
+	"errors"
+	"github.com/freepai/hummer/core/plugin"
+)
 
 func setup(ctx *plugin.Context) error {
-	mgr := &Manager{}
-	ctx.GetRegistry().RegisterBean(ManagerName, mgr)
+	cfg, ok := ctx.GetConfig().(*Config)
+	if !ok {
+		return errors.New("not support config")
+	}
 
-	// server protocol plugin
-	cfg := ctx.GetParams().(*Config)
+	// register ServerManager
+	mgr := NewManager(cfg.Addr)
+	ctx.Register(ManagerName, mgr)
+
+	// apply protocol plugin
 	ctx.ApplyPlugin(cfg.Protocol, nil)
 
 	return nil

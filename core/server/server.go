@@ -17,7 +17,7 @@ type Config struct {
 }
 
 type Route struct {
-	Path string
+	Path    string
 	Handler func(http.ResponseWriter, *http.Request)
 }
 
@@ -27,12 +27,15 @@ type Server interface {
 }
 
 type Manager struct {
+	addr string
 	routes []*Route
 	server Server
 }
 
-func NewManager() *Manager {
-	return &Manager{}
+func NewManager(addr string) *Manager {
+	return &Manager{
+		addr: addr,
+	}
 }
 
 func (m *Manager) SetServer(server Server) {
@@ -60,21 +63,32 @@ func (m *Manager) AllRoutes() []*Route {
 	return m.routes
 }
 
-func (m *Manager) ListenAndServe(addr string) {
+func (m *Manager) ListenAndServe() {
 	svr := m.server
 
 	if svr != nil {
 		svr.Config()
-		svr.ListenAndServe(addr)
+		svr.ListenAndServe(m.addr)
 	} else {
 		log.Fatal("not config server protocol plugin")
 	}
 }
 
 func GetManager(ctx *plugin.Context) *Manager {
-	return ctx.GetBean(ManagerName).(*Manager)
+	mgr, ok := ctx.GetBean(ManagerName).(*Manager)
+	if !ok {
+		log.Fatal("not found bean with name:" + ManagerName)
+	}
+
+	return mgr
 }
 
-func GetManagerFromRegistry(registry plugin.Registry) *Manager {
-	return registry.GetBean(ManagerName).(*Manager)
+func GetManagerFromContainer(ctx plugin.Container) *Manager {
+	mgr, ok := ctx.GetBean(ManagerName).(*Manager)
+
+	if !ok {
+		log.Fatal("not found bean with name:" + ManagerName)
+	}
+
+	return mgr
 }

@@ -23,7 +23,7 @@ func NewHummer(path string) *Hummer {
 	}
 }
 
-func (r *Hummer) RegisterBean(name string, bean interface{}) error {
+func (r *Hummer) AddBean(name string, bean interface{}) error {
 	r.beans[name] = bean
 	return nil
 }
@@ -40,15 +40,15 @@ func (h *Hummer) ApplyPlugins() {
 	// others plugins
 	plugins := h.config.Plugins
 	for _, cfg := range plugins {
-		h.ApplyPluginByConfig(cfg)
+		h.ApplyPluginWithConfig(cfg)
 	}
 }
 
-func (h *Hummer) ApplyPlugin(name string, params interface{}) error {
+func (h *Hummer) ApplyPlugin(name string, config interface{}) error {
 	setup := plugin.Get(name)
 
 	if setup != nil {
-		ctx := plugin.NewContext(h, params)
+		ctx := plugin.NewContext(h, config)
 		setup(ctx)
 	} else {
 		log.Fatal("not found plugin with name: " + name)
@@ -57,13 +57,13 @@ func (h *Hummer) ApplyPlugin(name string, params interface{}) error {
 	return nil
 }
 
-func (h *Hummer) ApplyPluginByConfig(cfg *plugin.Config) error {
+func (h *Hummer) ApplyPluginWithConfig(cfg *plugin.Config) error {
 	return h.ApplyPlugin(cfg.Name, cfg.Params)
 }
 
 func (h *Hummer) Start() {
 	h.ApplyPlugins()
 
-	mgr := server.GetManagerFromRegistry(h)
-	mgr.ListenAndServe(h.config.Server.Addr)
+	mgr := server.GetManagerFromContainer(h)
+	mgr.ListenAndServe()
 }

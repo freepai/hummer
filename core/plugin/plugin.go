@@ -1,57 +1,58 @@
 package plugin
 
+import "errors"
+
 type Config struct {
 	Name   string            `yaml:"name,omitempty"`
 	Params map[string]string `yaml:"params,omitempty"`
 }
 
-type Registry interface {
-	RegisterBean(name string, bean interface{}) error
+type Container interface {
+	AddBean(name string, bean interface{}) error
 	GetBean(name string) interface{}
-	ApplyPlugin(name string, params interface{}) error
+	ApplyPlugin(name string, config interface{}) error
 }
 
 type Context struct {
-	registry Registry
-	params interface{}
+	container Container
+	config    interface{}
 }
 
-type Plugin func(ctx *Context)error
+type Plugin func(ctx *Context) error
 
-func NewContext(registry Registry, params interface{}) *Context {
+func NewContext(container Container, config interface{}) *Context {
 	return &Context{
-		registry: registry,
-		params: params,
+		container: container,
+		config:    config,
 	}
 }
 
-func (this *Context) GetRegistry() Registry {
-	return this.registry
+func (c *Context) Register(name string, bean interface{}) error {
+	return c.AddBean(name, bean)
 }
 
-func (this *Context) RegisterBean(name string, bean interface{}) error {
-	this.registry.RegisterBean(name, bean)
+func (c *Context) AddBean(name string, bean interface{}) error {
+	c.container.AddBean(name, bean)
 	return nil
 }
 
-func (this *Context) GetBean(name string) interface{} {
-	return this.registry.GetBean(name)
+func (c *Context) GetBean(name string) interface{} {
+	return c.container.GetBean(name)
 }
 
-func (this *Context) GetParams() interface{} {
-	return this.params
+func (c *Context) GetConfig() interface{} {
+	return c.config
 }
 
-func (this *Context) GetParam(key string) string {
-	params := this.params.(map[string]string)
-
-	if params!=nil {
-		return params[key]
+func (c *Context) GetParam(key string) (string, error) {
+	params, ok := c.config.(map[string]string)
+	if !ok {
+		return "", errors.New("not support")
 	}
 
-	return ""
+	return params[key], nil
 }
 
-func (this *Context) ApplyPlugin(name string, params map[string]string) error {
-	return this.registry.ApplyPlugin(name, params)
+func (c *Context) ApplyPlugin(name string, params map[string]string) error {
+	return c.container.ApplyPlugin(name, params)
 }
