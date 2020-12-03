@@ -1,0 +1,21 @@
+server:
+  protocol: "http"
+  addr: "0.0.0.0:8081"
+
+shorturl:
+  idGen:
+    name: "snowflake"
+    params:
+      abc: "abc"
+  idEncode:
+    name: "base58"
+  idStore:
+    name: "leveldb"
+    params:
+      path: "./leveldb.db"
+
+plugins:
+  - name: "metrics"
+  - name: "health"
+  - name: "admin"
+

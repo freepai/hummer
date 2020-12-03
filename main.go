@@ -1,12 +1,11 @@
 package main
 
 import (
-	"log"
-) 
+	"github.com/freepai/hummer/core"
+	_ "github.com/freepai/hummer/plugins"
+)
 
 func main() {
-	a := 1
-	b := 2
-	c := a + b
-	log.Println("Hello World", c)
+	hummer := core.NewHummer("./hummer.yaml")
+	hummer.Start()
 }
