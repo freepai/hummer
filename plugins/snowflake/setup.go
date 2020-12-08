@@ -6,10 +6,10 @@ import (
 )
 
 func setup(ctx *plugin.Context) error {
-	mgr := shorturl.GetManager(ctx)
+	manager := shorturl.GetManager(ctx)
 
 	idGen := &Snowflake{}
-	mgr.RegisterIdGen(idGen)
+	manager.RegisterIdGen(idGen)
 	return nil
 }
 

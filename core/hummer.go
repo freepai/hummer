@@ -23,13 +23,13 @@ func NewHummer(path string) *Hummer {
 	}
 }
 
-func (r *Hummer) AddBean(name string, bean interface{}) error {
-	r.beans[name] = bean
+func (h *Hummer) SetBean(name string, bean interface{}) error {
+	h.beans[name] = bean
 	return nil
 }
 
-func (r *Hummer) GetBean(name string) interface{} {
-	return r.beans[name]
+func (h *Hummer) GetBean(name string) interface{} {
+	return h.beans[name]
 }
 
 func (h *Hummer) ApplyPlugins() {
