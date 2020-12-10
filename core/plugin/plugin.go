@@ -29,7 +29,11 @@ type Context struct {
 
 // Plugin is a function which register bean
 // in container, or extension bean's interface
-type Plugin func(ctx *Context) error
+type Plugin struct {
+	Name string
+	Setup func(ctx *Context) error
+	TearDown func(ctx *Context) error
+}
 
 // NewContext is construct func for Context
 // param container is Container

@@ -45,11 +45,11 @@ func (h *Hummer) ApplyPlugins() {
 }
 
 func (h *Hummer) ApplyPlugin(name string, config interface{}) error {
-	setup := plugin.Get(name)
+	plug := plugin.Get(name)
 
-	if setup != nil {
+	if plug != nil {
 		ctx := plugin.NewContext(h, config)
-		setup(ctx)
+		plug.Setup(ctx)
 	} else {
 		log.Fatal("not found plugin with name: " + name)
 	}
